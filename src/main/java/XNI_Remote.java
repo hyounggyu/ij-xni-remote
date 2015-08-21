@@ -1,6 +1,7 @@
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.gui.GenericDialog;
 import ij.plugin.PlugIn;
 
 import java.io.DataInputStream;
@@ -10,8 +11,8 @@ import java.net.Socket;
 
 public class XNI_Remote implements PlugIn {
 
-    public ImagePlus getImagePlus() throws IOException {
-        Socket s = new Socket("127.0.0.1", 5051);
+    public ImagePlus getImagePlus(String host) throws IOException {
+        Socket s = new Socket(host, 5051);
 
         DataOutputStream out = new DataOutputStream(s.getOutputStream());
         DataInputStream in = new DataInputStream(s.getInputStream());
@@ -39,8 +40,14 @@ public class XNI_Remote implements PlugIn {
 
     @Override
     public void run(String arg) {
+        String host="127.0.0.1";
+        GenericDialog gd = new GenericDialog("Fetch Image Data");
+        gd.addStringField("Host:", host);
+        gd.showDialog();
+        if (gd.wasCanceled()) return;
+        host = gd.getNextString();
         try {
-            ImagePlus image = getImagePlus();
+            ImagePlus image = getImagePlus(host);
             image.show();
         } catch (IOException e) {
             IJ.showMessage("Connection Error");
